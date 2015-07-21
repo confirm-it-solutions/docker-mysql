@@ -1,0 +1,34 @@
+---
+- hosts: localhost
+
+  tasks:
+
+    - name: install MySQL server
+      apt:
+        update_cache: yes
+        name: "mysql-server"
+        state: present
+
+    - name: remove MySQL data directory
+      file:
+        path: /var/lib/mysql
+        state: absent
+
+    - name: configure MySQL server
+      template:
+        src: templates/my.cnf.j2
+        dest: /etc/mysql/my.cnf
+        owner: root
+        group: root
+        mode: 0644
+
+    - name: configure start script
+      template:
+        src: templates/start.j2
+        dest: /start
+        owner: root
+        group: root
+        mode: 0750
+
+    - name: cleanup
+      shell: apt-get -y autoremove && rm -rf /var/lib/apt/lists/*

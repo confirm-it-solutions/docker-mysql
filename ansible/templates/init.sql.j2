@@ -1,0 +1,26 @@
+SET @@SESSION.SQL_LOG_BIN=0;
+
+-- Delete all MySQL users.
+DELETE FROM mysql.user WHERE User='root';
+
+-- Create new root user with all privileges.
+CREATE USER 'root'@'%' IDENTIFIED BY '{{ mysql_root_password }}' ;
+GRANT ALL ON *.* TO 'root'@'%' WITH GRANT OPTION ;
+
+-- Drop test database.
+DROP DATABASE IF EXISTS test ;
+
+{% if mysql_database %}
+    -- Create new database requested by the user.
+    CREATE DATABASE IF NOT EXISTS `{{ mysql_database }}`;
+
+    {% if mysql_user and mysql_password %}
+        -- Create new MySQL user to access the new database.
+        CREATE USER '{{ mysql_user }}'@'%' IDENTIFIED BY '{{ mysql_password }}';
+        GRANT ALL ON `{{ mysql_database }}`.* TO '{{ mysql_user }}'@'%';
+    {% endif %}
+
+{% endif %}
+
+-- Finally, flush all privileges.
+FLUSH PRIVILEGES;

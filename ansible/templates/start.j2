@@ -1,0 +1,38 @@
+#!/bin/bash
+
+# Exit on error.
+set -e
+
+# Initialize MySQL server.
+if [[ ! -d /data/mysql ]]
+then
+    # Install new MySQL database.
+    mysql_install_db --datadir=/data
+
+    # Start temporary MySQL server.
+    /usr/sbin/mysqld &
+
+    # Create init file.
+    ansible-playbook /etc/ansible/init.yml -c local
+
+    # Wait for MySQL server socket.
+    while true
+    do
+        [[ -S /var/run/mysqld/mysqld.sock ]] && break
+        sleep 1
+    done
+
+    # Load MySQL init.
+    mysql mysql </tmp/init.sql
+
+    # Kill MySQL server.
+    killall mysqld
+    while true
+    do
+        [[ -S /var/run/mysqld/mysqld.sock ]] || break
+        sleep 1
+    done
+fi
+
+# Start MySQL.
+exec /usr/sbin/mysqld

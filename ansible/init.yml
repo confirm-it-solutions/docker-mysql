@@ -1,0 +1,19 @@
+---
+- hosts: localhost
+
+  vars:
+
+    mysql_root_password: "{{ lookup('env', 'MYSQL_ROOT_PASSWORD') }}"
+    mysql_user: "{{ lookup('env', 'MYSQL_USER') }}"
+    mysql_password: "{{ lookup('env', 'MYSQL_PASSWORD') }}"
+    mysql_database: "{{ lookup('env', 'MYSQL_DATABASE') }}"
+
+  tasks:
+
+    - name: generating MySQL init file
+      template:
+        src: templates/init.sql.j2
+        dest: /tmp/init.sql
+        owner: mysql
+        group: mysql
+        mode: 0640
